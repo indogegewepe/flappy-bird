@@ -1,11 +1,10 @@
-//board
 let board;
-let boardWidth = 360;
-let boardHeight = window.innerHeight; // Adjust to screen height
+let boardWidth = window.innerWidth - 2; // Adjust to screen width
+let boardHeight = window.innerHeight - 2; // Adjust to screen height
 let context;
 
-//bird
-let birdWidth = 34; //width/height ratio = 408/228 = 17/12
+// bird
+let birdWidth = 34; // width/height ratio = 408/228 = 17/12
 let birdHeight = 24;
 let birdX = boardWidth / 8;
 let birdY = boardHeight / 2;
@@ -16,11 +15,11 @@ let bird = {
     y: birdY,
     width: birdWidth,
     height: birdHeight
-}
+};
 
-//pipes
+// pipes
 let pipeArray = [];
-let pipeWidth = 64; //width/height ratio = 384/3072 = 1/8
+let pipeWidth = 64; // width/height ratio = 384/3072 = 1/8
 let pipeHeight = 512;
 let pipeX = boardWidth;
 let pipeY = 0;
@@ -28,42 +27,51 @@ let pipeY = 0;
 let topPipeImg;
 let bottomPipeImg;
 
-//physics
-let velocityX = -2; //pipes moving left speed
-let velocityY = 2; //bird jump speed
+// score images
+let scoreImages = []; // Array to hold score images
+let totalPipesToPass = 12; // Total pipes to pass
+let currentScore = 0; // Current score
+
+// physics
+let velocityX = -2; // pipes moving left speed
+let velocityY = 2; // bird jump speed
 let gravity = 0.2;
 
 let gameOver = false;
-let score = 0;
+let winTheGame = false;
 
 window.onload = function () {
     board = document.getElementById("board");
     board.height = boardHeight;
     board.width = boardWidth;
-    context = board.getContext("2d"); //used for drawing on the board
+    context = board.getContext("2d"); // used for drawing on the board
 
-    //draw flappy bird
-    // context.fillStyle = "green";
-    // context.fillRect(bird.x, bird.y, bird.width, bird.height);
-
-    //load images
+    // Load bird image
     birdImg = new Image();
     birdImg.src = "./flappybird.png";
     birdImg.onload = function () {
         context.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
-    }
+    };
 
+    // Load pipe images
     topPipeImg = new Image();
     topPipeImg.src = "./toppipe.png";
 
     bottomPipeImg = new Image();
     bottomPipeImg.src = "./bottompipe.png";
 
+    // Load score images
+    for (let i = 0; i <= totalPipesToPass; i++) {
+        let scoreImage = new Image();
+        scoreImage.src = `./authenticity/${i}.png`;
+        scoreImages.push(scoreImage);
+    }
+
     requestAnimationFrame(update);
-    setInterval(placePipes, 1500); //every 1.5 seconds
+    setInterval(placePipes, 1500); // every 1.5 seconds
     document.addEventListener("keydown", moveBird);
     document.addEventListener("click", moveBird);
-}
+};
 
 function update() {
     requestAnimationFrame(update);
@@ -71,60 +79,66 @@ function update() {
         displayGameOver();
         return;
     }
+    if (winTheGame) {
+        displayWin();
+        return;
+    }
     context.clearRect(0, 0, board.width, board.height);
 
-    //bird
+    // Draw bird
     velocityY += gravity;
-    bird.y = Math.max(bird.y + velocityY, 0); //apply gravity to current bird.y, limit the bird.y to top of the canvas
+    bird.y = Math.max(bird.y + velocityY, 0); // apply gravity to current bird.y, limit the bird.y to top of the canvas
     context.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
 
     if (bird.y > board.height) {
         gameOver = true;
     }
 
-    //pipes
+    // Draw pipes
     for (let i = 0; i < pipeArray.length; i++) {
         let pipe = pipeArray[i];
         pipe.x += velocityX;
         context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
-
+        context.drawImage(scoreImages[10], pipe.x-70, pipe.y-340, 200, 200);
+        
+        // Score logic
         if (!pipe.passed && bird.x > pipe.x + pipe.width) {
-            score += 0.5; //0.5 because there are 2 pipes! so 0.5*2 = 1, 1 for each set of pipes
+            currentScore = currentScore + 0.5;
             pipe.passed = true;
         }
 
+        // Collision detection
         if (detectCollision(bird, pipe)) {
             gameOver = true;
         }
     }
 
-    //clear pipes
+    // Clear off-screen pipes
     while (pipeArray.length > 0 && pipeArray[0].x < -pipeWidth) {
-        pipeArray.shift(); //removes first element from the array
+        pipeArray.shift(); // removes first element from the array
     }
 
-    //score
-    context.fillStyle = "white";
-    context.font = "45px sans-serif";
-    context.textAlign = "center"; // Center align the score text
-    context.fillText(score, boardWidth / 2, 45); // Position score at the center horizontally
-
-    if (gameOver) {
-        displayGameOver();
+    // Check if game is won
+    if (currentScore >= totalPipesToPass) {
+        winTheGame = true;
     }
+
+    // Draw current score progress
+    let scoreImageIndex = Math.min(currentScore - 1, totalPipesToPass);
+    let centerX = 100;
+    let centerY = 0;
+    context.drawImage(scoreImages[scoreImageIndex], centerX, centerY, 200, 200);
 }
 
 function placePipes() {
-    if (gameOver) {
+    if (gameOver || currentScore >= totalPipesToPass) {
         return;
     }
 
-    //(0-1) * pipeHeight / 2.
-    // 0 -> -128 (pipeHeight/4)
-    // 1 -> -128 - 256 (pipeHeight/4 - pipeHeight/2) = -3/4 pipeHeight
     let randomPipeY = pipeY - pipeHeight / 4 - Math.random() * (pipeHeight / 2);
-    let openingSpace = board.height / 4;
+    let openingSpace = board.height / 2;
 
+    // Top pipe
     let topPipe = {
         img: topPipeImg,
         x: pipeX,
@@ -132,9 +146,10 @@ function placePipes() {
         width: pipeWidth,
         height: pipeHeight,
         passed: false
-    }
+    };
     pipeArray.push(topPipe);
 
+    // Bottom pipe
     let bottomPipe = {
         img: bottomPipeImg,
         x: pipeX,
@@ -142,31 +157,29 @@ function placePipes() {
         width: pipeWidth,
         height: pipeHeight,
         passed: false
-    }
+    };
     pipeArray.push(bottomPipe);
 }
 
 function moveBird(e) {
-    if (gameOver && e.target.id !== "playAgainButton") {
-        return; // Tidak melakukan apa-apa jika game over dan bukan tombol "Play Again" yang diklik
+    if ((gameOver || winTheGame) && e.target.id !== "playAgainButton") {
+        return;
     }
 
     if (e.code == "Space" || e.type == "click") {
-        if (gameOver) {
+        if (gameOver || winTheGame) {
             resetGame();
         } else {
-            //jump
-            velocityY = -6;
+            velocityY = -6; // Jump velocity
         }
     }
 }
 
-
 function detectCollision(a, b) {
-    return a.x < b.x + b.width &&   //a's top left corner doesn't reach b's top right corner
-           a.x + a.width > b.x &&   //a's top right corner passes b's top left corner
-           a.y < b.y + b.height &&  //a's top left corner doesn't reach b's bottom left corner
-           a.y + a.height > b.y;    //a's bottom left corner passes b's top left corner
+    return a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y;
 }
 
 function displayGameOver() {
@@ -174,11 +187,23 @@ function displayGameOver() {
     context.font = "45px sans-serif";
     context.textAlign = "center";
 
-    let centerX = board.width / 2;
-    let centerY = board.height / 2;
+    let centerX = -20;
+    let centerY = 400;
 
-    context.fillText("GAME OVER", centerX, centerY - 20);
-    context.fillText("Score: " + score, centerX, centerY + 20);
+    context.drawImage(scoreImages[12], centerX, centerY, 460, 154);
+
+    document.getElementById("playAgainButton").style.display = "block"; // Show the play again button
+}
+
+function displayWin() {
+    context.fillStyle = "white";
+    context.font = "45px sans-serif";
+    context.textAlign = "center";
+
+    let centerX = -20;
+    let centerY = 400;
+
+    context.drawImage(scoreImages[12], centerX, centerY, 460, 154);
 
     document.getElementById("playAgainButton").style.display = "block"; // Show the play again button
 }
@@ -186,8 +211,10 @@ function displayGameOver() {
 function resetGame() {
     bird.y = birdY;
     pipeArray = [];
-    score = 0;
+    currentScore = 0;
     velocityY = 0;
     gameOver = false;
+    winTheGame = false;
+
     document.getElementById("playAgainButton").style.display = "none"; // Hide the play again button
 }

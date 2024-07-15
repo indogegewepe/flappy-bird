@@ -12,9 +12,13 @@ canvas {
     border: 1px solid #000;
 }
 #board {
-    /* background-color: skyblue; */
-    background-image: url("./flappybirdbg.png");
+    /* background-color: skyblue; */ /* You can uncomment this line if you want to set a background color */
+    background-image: url("./flappybirdbg.png"); /* Set the background image */
+    background-size: cover; /* Cover the entire element with the background image */
+    background-position: center; /* Center the background image */
+    background-repeat: no-repeat; /* Prevent the background image from repeating */
 }
+
 #playAgainButton {
     display: none;
     position: absolute;
@@ -27,4 +31,8 @@ canvas {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
 }
