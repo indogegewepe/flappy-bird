@@ -1,5 +1,5 @@
 let board;
-let boardWidth = window.innerWidth - 2; // Adjust to screen width
+let boardWidth = 411; // Adjust to screen width
 let boardHeight = window.innerHeight - 2; // Adjust to screen height
 let context;
 
@@ -33,9 +33,9 @@ let totalPipesToPass = 12; // Total pipes to pass
 let currentScore = 0; // Current score
 
 // physics
-let velocityX = -4; // pipes moving left speed
-let velocityY = 2; // bird jump speed
-let gravity = 0.2;
+let velocityX = -2; // pipes moving left speed
+let velocityY = 0.1; // bird jump speed
+let gravity = 0.15;
 
 let gameOver = false;
 let winTheGame = false;
@@ -68,7 +68,7 @@ window.onload = function () {
     }
 
     requestAnimationFrame(update);
-    setInterval(placePipes, 2000); // every 2 seconds
+    setInterval(placePipes, 1500); // every 2 seconds
     document.addEventListener("keydown", moveBird);
     document.addEventListener("click", moveBird);
 };
@@ -112,7 +112,7 @@ function update() {
             gameOver = true;
         }
 
-        context.drawImage(scoreImages[Math.round(currentScore)], pipe.x-70, pipe.y-340, 200, 200);
+        context.drawImage(scoreImages[Math.round(currentScore)], pipe.x-70, pipe.y-250, 200, 200);
     }
 
     // Clear off-screen pipes
@@ -125,18 +125,12 @@ function update() {
         winTheGame = true;
     }
 
-    // Draw current score progress
-    // let scoreImageIndex = Math.min(currentScore - 1, totalPipesToPass);
-    // let centerX = 100;
     let centerY = 0;
-    // context.drawImage(scoreImages[scoreImageIndex], centerX, centerY, 200, 200);
-
     // Draw score images
     for (let i = 0; i < currentScore; i++) {
         let xPos = 28 * i; // Adjust x position based on score index
         context.drawImage(scoreImages[i], xPos, centerY, 150, 150); // Draw each score image
     }
-
 }
 
 function placePipes() {
@@ -145,7 +139,7 @@ function placePipes() {
     }
 
     let randomPipeY = pipeY - pipeHeight / 4 - Math.random() * (pipeHeight / 2);
-    let openingSpace = board.height / 2;
+    let openingSpace = board.height / 2.5;
 
     // Top pipe
     let topPipe = {
@@ -192,8 +186,11 @@ function detectCollision(a, b) {
 }
 
 function displayGameOver() {
-    context.fillStyle = "white";
-    context.fillRect(0, 0, board.width, board.height);
+    board = document.getElementById("board");
+    board.height = boardHeight;
+    board.width = boardWidth;
+    context = board.getContext("2d"); 
+
     context.fillStyle = "#232323";
     context.font = "45px sans-serif";
     context.textAlign = "center";
@@ -201,16 +198,19 @@ function displayGameOver() {
     let centerX = -20;
     let centerY = 400;
 
-    context.drawImage(scoreImages[12], centerX, centerY - 210, 460, 154);
-    context.fillText("GAME OVER", centerX + 230, centerY);
-    context.fillText("Score is : " + currentScore, centerX + 230, centerY + 110);
+    context.drawImage(scoreImages[12], centerX + 55, centerY - 230, 350, 117);
+    context.fillText("GAME OVER", centerX + 230, centerY - 70);
+    context.fillText("Score is : " + currentScore, centerX + 230, centerY - 20);
 
     document.getElementById("playAgainButton").style.display = "block"; // Show the play again button
 }
 
 function displayWin() {
-    context.fillStyle = "white";
-    context.fillRect(0, 0, board.width, board.height);
+    board = document.getElementById("board");
+    board.height = boardHeight;
+    board.width = boardWidth;
+    context = board.getContext("2d"); 
+
     context.fillStyle = "#232323";
     context.font = "45px sans-serif";
     context.textAlign = "center";
@@ -218,9 +218,8 @@ function displayWin() {
     let centerX = -20;
     let centerY = 400;
 
-    context.drawImage(scoreImages[12], centerX, centerY - 210, 460, 154);
-    context.fillText("YOU WIN!!!", centerX + 230, centerY);
-    context.fillText("PERFECT!!", centerX + 230, centerY + 110);
+    context.drawImage(scoreImages[12], centerX + 55, centerY - 230, 350, 117);
+    context.fillText("YOU WIN!!!", centerX + 230, centerY - 50);
 
     document.getElementById("playAgainButton").style.display = "block"; // Show the play again button
 }
