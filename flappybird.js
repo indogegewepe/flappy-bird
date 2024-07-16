@@ -33,7 +33,7 @@ let totalPipesToPass = 12; // Total pipes to pass
 let currentScore = 0; // Current score
 
 // physics
-let velocityX = -2; // pipes moving left speed
+let velocityX = -4; // pipes moving left speed
 let velocityY = 2; // bird jump speed
 let gravity = 0.2;
 
@@ -68,7 +68,7 @@ window.onload = function () {
     }
 
     requestAnimationFrame(update);
-    setInterval(placePipes, 1500); // every 1.5 seconds
+    setInterval(placePipes, 2000); // every 2 seconds
     document.addEventListener("keydown", moveBird);
     document.addEventListener("click", moveBird);
 };
@@ -99,7 +99,7 @@ function update() {
         let pipe = pipeArray[i];
         pipe.x += velocityX;
         context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
-        context.drawImage(scoreImages[10], pipe.x-70, pipe.y-340, 200, 200);
+        
         
         // Score logic
         if (!pipe.passed && bird.x > pipe.x + pipe.width) {
@@ -111,6 +111,8 @@ function update() {
         if (detectCollision(bird, pipe)) {
             gameOver = true;
         }
+
+        context.drawImage(scoreImages[Math.round(currentScore)], pipe.x-70, pipe.y-340, 200, 200);
     }
 
     // Clear off-screen pipes
@@ -124,10 +126,17 @@ function update() {
     }
 
     // Draw current score progress
-    let scoreImageIndex = Math.min(currentScore - 1, totalPipesToPass);
-    let centerX = 100;
+    // let scoreImageIndex = Math.min(currentScore - 1, totalPipesToPass);
+    // let centerX = 100;
     let centerY = 0;
-    context.drawImage(scoreImages[scoreImageIndex], centerX, centerY, 200, 200);
+    // context.drawImage(scoreImages[scoreImageIndex], centerX, centerY, 200, 200);
+
+    // Draw score images
+    for (let i = 0; i < currentScore; i++) {
+        let xPos = 28 * i; // Adjust x position based on score index
+        context.drawImage(scoreImages[i], xPos, centerY, 150, 150); // Draw each score image
+    }
+
 }
 
 function placePipes() {
@@ -184,26 +193,34 @@ function detectCollision(a, b) {
 
 function displayGameOver() {
     context.fillStyle = "white";
+    context.fillRect(0, 0, board.width, board.height);
+    context.fillStyle = "#232323";
     context.font = "45px sans-serif";
     context.textAlign = "center";
 
     let centerX = -20;
     let centerY = 400;
 
-    context.drawImage(scoreImages[12], centerX, centerY, 460, 154);
+    context.drawImage(scoreImages[12], centerX, centerY - 210, 460, 154);
+    context.fillText("GAME OVER", centerX + 230, centerY);
+    context.fillText("Score is : " + currentScore, centerX + 230, centerY + 110);
 
     document.getElementById("playAgainButton").style.display = "block"; // Show the play again button
 }
 
 function displayWin() {
     context.fillStyle = "white";
+    context.fillRect(0, 0, board.width, board.height);
+    context.fillStyle = "#232323";
     context.font = "45px sans-serif";
     context.textAlign = "center";
 
     let centerX = -20;
     let centerY = 400;
 
-    context.drawImage(scoreImages[12], centerX, centerY, 460, 154);
+    context.drawImage(scoreImages[12], centerX, centerY - 210, 460, 154);
+    context.fillText("YOU WIN!!!", centerX + 230, centerY);
+    context.fillText("PERFECT!!", centerX + 230, centerY + 110);
 
     document.getElementById("playAgainButton").style.display = "block"; // Show the play again button
 }
