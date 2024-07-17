@@ -33,9 +33,9 @@ let totalPipesToPass = 12; // Total pipes to pass
 let currentScore = 0; // Current score
 
 // physics
-let velocityX = -5; // pipes moving left speed
-let velocityY = 2; // bird jump speed
-let gravity = 2;
+let velocityX = -4; // pipes moving left speed
+let velocityY = 0.1; // bird jump speed
+let gravity = 0.15;
 
 let gameOver = false;
 let winTheGame = false;
